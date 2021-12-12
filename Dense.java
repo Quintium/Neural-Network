@@ -10,7 +10,6 @@ public class Dense extends Layer {
     private Function<Float, Float> activation;
     private Function<Float, Float> activationDerivative;
     private boolean initialized = false;
-    private boolean tooBig = false;
 
     public Dense(int nodes, String activation) {
         this.nodes = nodes;
@@ -83,10 +82,6 @@ public class Dense extends Layer {
         values.add(biases);
         values.map(activation);
 
-        if (tooBig) {
-            System.out.println("...");
-        }
-
         return values;
     }
 
@@ -105,7 +100,7 @@ public class Dense extends Layer {
         Matrix dc_dw = Matrix.multiply(dc_dz, dz_dw);
 
         if (dc_dz.check(x -> Math.abs(x) > 1) || dc_dw.check(x -> Math.abs(x) > 1)) {
-            tooBig = true; 
+            System.out.println("Too big!");
         }
 
         weights.subtract(dc_dw);

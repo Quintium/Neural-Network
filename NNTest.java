@@ -4,30 +4,44 @@ import java.lang.Math;
 import java.util.function.*;
 
 public class NNTest extends JPanel {
+   // window properties
    private static final long serialVersionUID = 1L;
    public static final int width = 1000;
    public static final int height = 700;
    public static final int FPS = 60;
    
-   int gen = 0;
+   // data properties
    final float start = 0f;
+   final float end = 10f;
    final float stepSize = 0.01f;
+
+   // training properties
+   int gen = 0;
+   float learningRate = 0.0001f;
+
    Model model;
 
    public NNTest() {
+      // set window size
       this.setPreferredSize(new Dimension(width, height));
 
+      // create neural network model
       model = new Model();
       model.addLayer(new Input(1));
-      model.addLayer(new Dense(2, "relu"));
+      model.addLayer(new Dense(32, "relu"));
+      model.addLayer(new Dense(32, "relu"));
       model.addLayer(new Dense(1, "identity"));
 
       model.initialize();
 
-      for (int i = 0; i < 0; i++) {
-         float[] inputArr = {(float)Math.random() * width * stepSize + start};
+      for (int i = 0; i < 3000000; i++) {
+         float[] inputArr = {(float)Math.random() * end + start};
          float[] expectedArr = {(float)Math.sin(inputArr[0])};
-         model.train(0.1f, inputArr, expectedArr);
+         model.train(learningRate, inputArr, expectedArr);
+
+         if (i % 100000 == 0) {
+            System.out.println("Iteration " + i);
+         }
       }
 
       Thread gameThread = new Thread() {
@@ -58,8 +72,9 @@ public class NNTest extends JPanel {
       g.fillRect(0, 0, width, height);
       g2.setStroke(new BasicStroke(1));
 
-      float[][] input = new float[width][];
-      for (int i = 0; i < width; i++) {
+      int dataLength = (int)((end - start) / stepSize);
+      float[][] input = new float[dataLength][];
+      for (int i = 0; i < dataLength; i++) {
          input[i] = new float[]{i * stepSize + start};
       }
 
@@ -75,9 +90,9 @@ public class NNTest extends JPanel {
       //System.out.println("Loss: " + model.calculateLoss(input, expected));
 
       for (int i = 0; i < 100; i++) {
-         float[] inputArr = {(float)Math.random() * width * stepSize + start};
+         float[] inputArr = {(float)Math.random() * end + start};
          float[] expectedArr = {(float)Math.sin(inputArr[0])};
-         model.train(0.001f, inputArr, expectedArr);
+         model.train(learningRate, inputArr, expectedArr);
          gen++;
       }
       
@@ -93,9 +108,9 @@ public class NNTest extends JPanel {
 
    public void drawGraph(Graphics g, float[][] data) {
       int lastValue = (int) ((data[0][0] + 1) / 2 * height);
-      for (int i = 1; i < width; i++) {
+      for (int i = 1; i < data.length; i++) {
          int newValue = (int) ((data[i][0] + 1) / 2 * height);
-         g.drawLine(i - 1, lastValue, i, newValue);
+         g.drawLine((int)(((float)i - 1) / data.length * width), lastValue, (int)((float)i / data.length * width), newValue);
          lastValue = newValue;
       }
    }
